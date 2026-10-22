@@ -1,4 +1,4 @@
-ARG BUILD_FROM
+ARG BUILD_FROM=ghcr.io/home-assistant/base:3.24-2026.08.0
 FROM $BUILD_FROM
 
 # Setup base
@@ -27,12 +27,27 @@ RUN sed -i 's/^#[[:space:]]*\(include "\/usr\/share\/nano\/\*\.nanorc".*\)/\1/' 
 RUN sed -i "s|/bin/sh|/bin/bash|" /etc/passwd
 
 # Home Assistant CLI
-ARG BUILD_ARCH
-ARG CLI_VERSION
-RUN curl -Lso /usr/bin/ha \
-        "https://github.com/home-assistant/cli/releases/download/${CLI_VERSION}/ha_${BUILD_ARCH}" \
+ARG CLI_VERSION=5.5.0
+ARG TARGETARCH
+RUN \
+    if [ -z "${TARGETARCH}" ]; then \
+        echo "TARGETARCH is not set, please use Docker BuildKit for the build." && exit 1; \
+    fi \
+    && case "${TARGETARCH}" in \
+            amd64) CLI_ARCH="amd64" ;; \
+            arm64) CLI_ARCH="aarch64" ;; \
+            *) echo "Unsupported TARGETARCH: ${TARGETARCH}" && exit 1 ;; \
+        esac \
+    && curl -Lso /usr/bin/ha \
+        "https://github.com/home-assistant/cli/releases/download/${CLI_VERSION}/ha_${CLI_ARCH}" \
     && chmod a+x /usr/bin/ha \
     && /usr/bin/ha completion > /usr/share/bash-completion/completions/ha
 
 # Copy data
 COPY rootfs /
+
+LABEL \
+    org.opencontainers.image.title="Home Assistant App: Terminal & SSH" \
+    org.opencontainers.image.description="Allow logging in remotely to Home Assistant using SSH" \
+    org.opencontainers.image.source="https://github.com/home-assistant/app-ssh" \
+    org.opencontainers.image.licenses="Apache License 2.0"
