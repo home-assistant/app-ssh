@@ -1,0 +1,17 @@
+---
+configuration:
+  authorized_keys:
+    name: Овлашћени кључеви
+    description: Ваши јавни кључеви које желите да прихватите за пријављивање.
+  password:
+    name: Лозинка
+    description: Поставите лозинку за пријављивање. НЕ препоручујемо ову варијанту.
+  apks:
+    name: Пакети
+    description: >-
+      Додатни Alpine пакети за инсталацију у контејнеру апликације.
+  server:
+    name: Сервер
+    description: Подешавање SSH сервера
+network:
+  22/tcp: SSH порт
